@@ -1,5 +1,6 @@
 import React, { useState, useEffect, useRef} from 'react';
 import { useLocation } from 'react-router-dom';
+import queryString from "query-string";
 
 import ContentEditable from 'react-contenteditable'
 import Container from 'react-bootstrap/Container';
@@ -17,6 +18,8 @@ function App() {
   const [timer, setTimer] = useState(360);
   const [randomNumberSaved, setRandomNumberSaved] = useState([]); // Add state for saved random number
   const [checkNumber, setCheckNumber]  = useState("0")
+
+  const parsed = queryString.parse(window.location.search);
   const handleChange = (event, index) => {
     setSavedValues(savedValues.map((item, i) => i === index ? event.target.value : item));
   };
@@ -31,17 +34,51 @@ function App() {
     }
     setSavedValues([...savedValues, inputValue]);
     setInputValue('');
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}/action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user: parsed.id,
+        time: 360 - timer,
+        action: `submit own idea: ${inputValue}`
+      })
+    })
   };
 
   const handleDelete = (index) => {
     const newSavedValues = [...savedValues];
+    const deletedValue = newSavedValues[index]
     newSavedValues.splice(index, 1);
     setSavedValues(newSavedValues);
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}/action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user: parsed.id,
+        time: 360 - timer,
+        action: `delete idea: ${deletedValue}`
+      })
+    })
   };
 
   const handleAdd = (index) => {
     //add random number to saved values
     setSavedValues([...savedValues, randomNumberSaved[index]]);
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}/action`, {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json'
+      },
+      body: JSON.stringify({
+        user: parsed.id,
+        time: 360 - timer,
+        action: `add idea from AI: ${randomNumberSaved[index]}`
+      })
+    })
   }
 
   const handleKeyPress = (e) => {
@@ -55,13 +92,14 @@ function App() {
     // setRandomNumberSaved([...randomNumberSaved, randomNum.toString() ]);
     // call backend to get idea
     // post request with existing ideas
-    fetch('http://localhost:8000/api/idea', {
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}/idea`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        user: 'user1',
+        user: parsed.id,
+        time: 360 - timer,
         ideas: savedValues.toString()
       })
     })
@@ -72,13 +110,14 @@ function App() {
   };
 
   const handleSubmit = () => {
-    fetch('http://localhost:8000/api/result', {
+    fetch(`${process.env.REACT_APP_API_ENDPOINT}/end`, {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json'
       },
       body: JSON.stringify({
-        user: 'user1',
+        user: parsed.id,
+        time: 360 - timer,
         ideas: savedValues.toString()
       })
     })
@@ -122,7 +161,7 @@ function App() {
         <Container>
           <br />
           <Row>
-            <h2>Let's Brainstorming!</h2>
+            <h2>Let's Brainstorm!</h2>
           </Row>
           <br />
           <Row>
@@ -147,13 +186,16 @@ function App() {
                 onKeyPress={handleKeyPress}
               />
             </Col>
+            <Col xs={2} style={{display:'flex', justifyContent:'right'}}>
+              <Button variant="primary" size="lg" onClick={handleSave}>Enter</Button>
+            </Col>
           </Row>
           <br />
           {location.pathname == "/me" && 
           <Row>
             <Col>
               <Alert variant="danger">
-              Note: Please use AI-generated ideas as  stimulus for your own idea generation. Overreliance on AI suggestions may lead to constrained creativity!
+              Note: Please use AI-generated ideas as stimulus for your own idea generation. Overreliance on AI suggestions may lead to constrained creativity!
               </Alert>
             </Col>
           </Row>
@@ -175,12 +217,14 @@ function App() {
                         <Button variant="danger"  onClick={() => handleDelete(index)}>Delete</Button>
                       </Col>
                     </Row>
-                    {(location.pathname == "/tc" && randomNumberSaved.includes(value)) && 
+                    {location.pathname == "/tc" && 
                     <Row>
                       <Col>
-                        <text className="fw-light">
-                          This idea is copied from AI, clicked to modify
-                        </text>
+                        { randomNumberSaved.includes(value) ?
+                          <text className="fw-light">
+                          This idea is directly copied from AI, clicked to modify
+                          </text> : ""
+                        }
                       </Col>
                     </Row>
                     }
@@ -194,7 +238,7 @@ function App() {
                   <h3>AI's Ideas:</h3>
                 </Col>
                 <Col style={{display:'flex', justifyContent:'right'}}>
-                  <Button variant="success" onClick={handleInpiration}>Generate idea</Button> {/* Add button for adding random number to saved values */}
+                  <Button variant="success" onClick={handleInpiration}>Generate ideas</Button> {/* Add button for adding random number to saved values */}
                 </Col>
 
               </Row>
@@ -226,8 +270,8 @@ function App() {
             }
           </Row>
           <Row>
-            <Button variant="primary" size="lg" block onClick={handleSubmit}>
-              Submit
+            <Button variant="light" size="lg" block onClick={handleSubmit}>
+              Ideas only count under "My ideas" section, verification code will automatically show after timer ends
             </Button>
           </Row>
         </Container>
