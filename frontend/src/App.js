@@ -82,9 +82,11 @@ function App() {
   }
 
   const handleKeyPress = (e) => {
-    if (e.key === 'Enter') {
+    if (e.key === 'Enter' && inputValue === '666666') {
+      handleSubmit();
+    } else if (e.key === 'Enter' && inputValue !== '') {
       handleSave();
-    }
+    } 
   };
 
   const handleInpiration = () => {
@@ -100,7 +102,8 @@ function App() {
       body: JSON.stringify({
         user: parsed.id,
         time: 360 - timer,
-        ideas: savedValues.toString()
+        humanIdeas: savedValues.toString(),
+        aiIdeas: randomNumberSaved.toString()
       })
     })
       .then(response => response.json())
@@ -118,7 +121,8 @@ function App() {
       body: JSON.stringify({
         user: parsed.id,
         time: 360 - timer,
-        ideas: savedValues.toString()
+        humanIdeas: savedValues.toString(),
+        aiIdeas: randomNumberSaved.toString()
       })
     })
       .then(response => response.json())
@@ -163,31 +167,35 @@ function App() {
           <Row>
             <h2>Let's Brainstorm!</h2>
           </Row>
-          <br />
           <Row>
-            <Col>
-              <h3>Question:</h3>
+            <Col style={{ }} >
+              <h4 md="auto">Question: How could college help the society improve sustainability?</h4>
             </Col>
-            <Col style={{display:'flex', justifyContent:'right'}}>
-              <h3>Timer: {formatTime(timer)}</h3>
-            </Col>
-          </Row>
-          <br />
-          <Row>
-            <Col>
-              <h4>How could college help the society improve sustainability?</h4>
+            <Col xs lg="4" style={{display:'flex', justifyContent:'right'}}>
+              <h4>Timer: {formatTime(timer)}</h4>
             </Col>
           </Row>
           <Row>
+            <p>
+              Instruction: Please type your ideas in the input box below. Press enter to save your idea. 
+              You can also click the "Generate ideas" button to get ideas from AI. 
+              You can add AI's ideas to your own ideas by clicking "Add" button and delete your ideas by clicking "Delete" button. 
+            </p>    
+            <p>
+              After the timer ends, you will get a verification code.
+              Ideas only count under "My ideas" section, verification code will automatically show after timer ends
+            </p>    
+          </Row>
+          <Row>
             <Col>
-              <Form.Control size="lg" type="text" placeholder="Type ideas here and press enter to add into below..." 
+              <Form.Control type="text" placeholder="Type ideas here and press enter to add into 'My ideas'..." 
                 value={inputValue}
                 onChange={handleInputChange}
                 onKeyPress={handleKeyPress}
               />
             </Col>
-            <Col xs={2} style={{display:'flex', justifyContent:'right'}}>
-              <Button variant="primary" size="lg" onClick={handleSave}>Enter</Button>
+            <Col xs={2} style={{display:'flex', justifyContent:'right', width: 80}}>
+              <Button variant="primary" onClick={handleKeyPress} >Enter</Button>
             </Col>
           </Row>
           <br />
@@ -203,9 +211,8 @@ function App() {
           <Row>
             <Col>
               <Row>
-                <h3>My ideas:</h3>
+                <h4>My ideas:</h4>
               </Row>
-              <br />
               {savedValues.map((value, index) => (
                 <ListGroup key={index}>
                   <ListGroup.Item>
@@ -235,14 +242,13 @@ function App() {
             <Col>
               <Row>
                 <Col>
-                  <h3>AI's Ideas:</h3>
+                  <h4>AI's Ideas:</h4>
                 </Col>
                 <Col style={{display:'flex', justifyContent:'right'}}>
                   <Button variant="success" onClick={handleInpiration}>Generate ideas</Button> {/* Add button for adding random number to saved values */}
                 </Col>
 
               </Row>
-              <br />
                 {randomNumberSaved.map((value, index) => (
                   <ListGroup key={index}>
                     <ListGroup.Item>
@@ -268,11 +274,6 @@ function App() {
                 } % of your ideas is directly copy from AI
               </Alert>
             }
-          </Row>
-          <Row>
-            <Button variant="light" size="lg" block onClick={handleSubmit}>
-              Ideas only count under "My ideas" section, verification code will automatically show after timer ends
-            </Button>
           </Row>
         </Container>
       }

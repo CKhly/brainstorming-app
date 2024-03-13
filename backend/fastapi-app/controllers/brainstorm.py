@@ -22,7 +22,8 @@ client = OpenAI(
 class Result(BaseModel):
     user: str
     time: int
-    ideas: str
+    humanIdeas: str
+    aiIdeas: str
 
 class UserAction(BaseModel):
     user: str
@@ -39,14 +40,21 @@ async def start_exp(action: UserAction):
 async def create_idea(result: Result):
     completion = client.chat.completions.create(
         model="gpt-3.5-turbo",
+        temperature= 1,
         messages=[{
             "role": "system", 
             "content": """
             You are a creative brainstorming master. Help me to brainstorming, 
             Give me one idea about: How can college help the society improve sustainability? 
             The idea should less than 12 words.
-            Use the following idea as inspiration if below exists but the idea should be different from the following idea:
-            {result.ideas}
+            You already have the following ideas, but the idea should be different from the following ideas:
+            {result.aiIdeas}
+            Use the following idea as inspiration if below exists but the idea you provide should be totally different from the following ideas:
+            {result.humanIdeas}
+            Please follow brainstorming rules: 
+            Rule 1: Focus on Quantity
+            Rule 2: Welcome Wild Ideas
+            Rule 3: Combine and Improve Ideas
             """
         }],
     )
@@ -60,7 +68,7 @@ async def create_idea(result: Result):
 def end_exp(result: Result):
     randbytes = random.randbytes(4)
     verification_code = result.user + "-" + randbytes.hex()
-    LOGGER.info(f"User {result.user} at time {result.time} end the experiment with ideas: {result.ideas}. Code: {verification_code}")
+    LOGGER.info(f"User {result.user} at time {result.time} end the experiment with ideas: {result.humanIdeas} with {result.aiIdeas}. Code: {verification_code}")
     return {"result": verification_code }
 
 @router.post("/action")

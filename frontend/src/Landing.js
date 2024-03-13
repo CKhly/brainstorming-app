@@ -84,7 +84,7 @@ const Landing = () => {
             -and you can get inspiration by clicking the button to get ideas from AI. 
           <br />
           <Form>
-            <Form.Group className="mb-3" controlId="formBasicEmail">
+            <Form.Group className="mb-3" controlId="">
               <Form.Label>Please paste you Survey ID from Qualtrics</Form.Label>
               <Form.Control type="Survey ID" placeholder="BSID-XXXXX" onChange={handleNameChange}/>
             </Form.Group>
