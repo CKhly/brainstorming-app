@@ -68,7 +68,7 @@ async def create_idea(result: Result):
 def end_exp(result: Result):
     randbytes = random.randbytes(4)
     verification_code = result.user + "-" + randbytes.hex()
-    LOGGER.info(f"User {result.user} at time {result.time} end the experiment with ideas: {result.humanIdeas} with {result.aiIdeas}. Code: {verification_code}")
+    LOGGER.info(f"User {result.user} at time {result.time} end the experiment with ideas: {result.humanIdeas}. AI generated ideas:  {result.aiIdeas}. Code: {verification_code}")
     return {"result": verification_code }
 
 @router.post("/action")

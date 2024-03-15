@@ -32,6 +32,9 @@ function App() {
     if(location.pathname == "/fc"){
       handleInpiration()
     }
+    if(inputValue === ''){
+      return
+    }
     setSavedValues([...savedValues, inputValue]);
     setInputValue('');
     fetch(`${process.env.REACT_APP_API_ENDPOINT}/action`, {
@@ -195,7 +198,7 @@ function App() {
               />
             </Col>
             <Col xs={2} style={{display:'flex', justifyContent:'right', width: 80}}>
-              <Button variant="primary" onClick={handleKeyPress} >Enter</Button>
+              <Button variant="primary" onClick={handleSave} >Enter</Button>
             </Col>
           </Row>
           <br />
